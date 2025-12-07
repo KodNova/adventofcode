@@ -12,17 +12,31 @@ fn main() {
 
         match direction {
             true => {
-                dial += amount;
+                for _ in 0..amount {
+                    if dial <= 98 {
+                        dial += 1
+                    } else if dial == 99 {
+                        dial = 0
+                    };
+
+                    if dial == 0 {
+                        answer += 1;
+                    };
+                }
             }
             false => {
-                dial -= amount;
+                for _ in 0..amount {
+                    if dial >= 1 {
+                        dial -= 1
+                    } else if dial == 0 {
+                        dial = 99;
+                    };
+
+                    if dial == 0 {
+                        answer += 1;
+                    }
+                }
             }
-        }
-
-        dial %= 100;
-
-        if dial == 0 {
-            answer += 1;
         }
     }
     println!("Solution: {answer}")
