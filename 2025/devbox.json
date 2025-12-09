@@ -3,7 +3,8 @@
   "packages": [
     "rustup@latest",
     "nodejs@latest",
-    "typescript@latest"
+    "typescript@latest",
+    "perf@latest"
   ],
   "shell": {
     "init_hook": [
