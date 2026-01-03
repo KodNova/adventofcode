@@ -1,45 +1,57 @@
 use std::fs;
 
 fn main() {
-    let _place_hold: [&str; 4] = [
-        "987654321111111",
-        "811111111111119",
-        "234234234234278",
-        "818181911112111",
-    ];
-
     let contents = fs::read_to_string("input").expect("failed to read file");
 
-    let answer: u32 = contents.lines().map(find_joltage).sum();
+    let answer: u128 = contents.lines().map(find_joltage_two_digits).sum();
+    let answer2: u128 = contents.lines().map(find_joltage_twelve_digits).sum();
 
-    let testing_answer: u32 = _place_hold
-        .iter()
-        .map(|num_str| find_joltage(num_str))
-        .sum();
-
-    println!("Testing Solution: {}", testing_answer);
     println!("Solution: {}", answer);
+    println!("Solution2: {}", answer2);
 }
 
-fn find_joltage(num_str: &str) -> u32 {
+fn find_joltage_two_digits(num_str: &str) -> u128 {
+    num_str
+        .char_indices()
+        .filter(|(_, ch)| ch.is_ascii_digit())
+        .filter(|(index, _)| *index < num_str.len() - 1)
+        .map(|(index, ch)| {
+            let dig = ch.to_digit(10).expect("error ch to digit") as u128;
+            let rest = &num_str[index + 1..];
+            dig * 10 + highest_digit_in_str(rest)
+        })
+        .max()
+        .expect("whoa there")
+}
+
+fn find_joltage_twelve_digits(num_str: &str) -> u128 {
+    let digits_needed = 12;
+    let chars: Vec<char> = num_str.chars().collect();
+    let len = chars.len();
+
+    let (result, _) =
+        (1..=digits_needed)
+            .rev()
+            .fold((String::new(), 0), |(mut result, start_idx), remaining| {
+                let end_idx = len - remaining + 1;
+
+                let (max_pos, _) = (start_idx..end_idx)
+                    .map(|i| (i, chars[i].to_digit(10).unwrap()))
+                    .fold((start_idx, 0), |(best_i, best_d), (i, d)| {
+                        if d > best_d { (i, d) } else { (best_i, best_d) }
+                    });
+
+                result.push(chars[max_pos]);
+                (result, max_pos + 1)
+            });
+
+    result.parse().expect("failed to parse")
+}
+
+fn highest_digit_in_str(num_str: &str) -> u128 {
     num_str
         .chars()
-        .enumerate()
-        .take(num_str.len() - 1)
-        .fold(0, |highest_yet, (index, ch)| {
-            let merged = ch.to_string() + &highest_number_in_str(num_str, index);
-            let num: u32 = merged.parse().expect("failed to parse into number");
-            highest_yet.max(num)
-        })
-}
-
-fn highest_number_in_str(num_str: &str, start_index: usize) -> String {
-    let new_num_str = &num_str[start_index + 1..];
-    new_num_str
-        .chars()
-        .fold(0, |highest: u32, ch: char| {
-            let num: u32 = ch.to_digit(10).expect("failed the make ch into number");
-            highest.max(num)
-        })
-        .to_string()
+        .map(|ch| ch.to_digit(10).expect("error ch to digit") as u128)
+        .max()
+        .expect("not a number")
 }
